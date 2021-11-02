@@ -78,23 +78,28 @@ def get_details(imdbid):
     return {'title': title, 'genres': genres, 'imdb_id': imdb_id, 'country': country, 'language': language, 'release_date': release_date, 'production_companies': production_companies, 'runtime': runtime, 'overview': overview}
 
 
-def tmdb_posters(imdbid, count=None):    
+def tmdb_posters(imdbid, count=15):    
     urls = get_poster_urls(imdbid)
     movie = get_details(imdbid)
     outpath = ""
     # Create a folder for the movie
     if not os.path.exists(IMAGES + movie['title']):
-        os.makedirs(IMAGES + movie['title'])
+        os.makedirs(IMAGES + movie['title'] + movie['imdb_id'])
     outpath = IMAGES + movie['title'] + "/"
+    if count is not None:
+        urls = urls[:count]
     _download_images(urls, outpath)
 
-# Create a CSV containing details of all movies
-def create_csv(movies):
-    with open('movies.csv', 'w') as f:
-        for movie in movies:
-            f.write("{0},{1},{2},{3},{4},{5},{6},{7},{8},{9},{10},{11}\n".format(movie['title'], movie['genres'], movie['imdb_id'], movie['country'], movie['language'], movie['release_date'], movie['production_companies'], movie['runtime'], movie['overview'], movie['poster_urls'], movie['backdrop_urls']))
+imdbid = []
+# Read in the IMDB ids from the IMDb movies.csv
+with open('data/IMDB movies.csv', 'r', encoding="utf-8") as f:
+    lines = f.readlines()
+    for line in lines:
+        imdbid.append(line.split(',')[0])
 
-
-tmdb_posters('tt1160419')
-dune= get_details('tt1160419')
-create_csv(dune)
+try:
+    for id in imdbid:
+        tmdb_posters(id)
+except:
+    print("Error")
+    pass
